@@ -1,0 +1,46 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: mathfast-server
+
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/mathfast}
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      pool-name: MathFastHikariPool
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        show_sql: true
+    open-in-view: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 60000ms
+
+server:
+  port: ${PORT:8080}
+
+jwt:
+  secret: ${JWT_SECRET:default-secret-key-that-should-be-replaced-in-production-long-enough-for-hs256}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 hours
+
+frontend:
+  cors:
+    urls: ${FRONTEND_URLS:http://localhost:3000,http://localhost:5173}
