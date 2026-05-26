@@ -48,9 +48,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 if (subject != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     if (!jwtUtil.isTokenExpired(jwt)) {
+                        String playerId = jwtUtil.extractClaim(jwt, c -> c.get("playerId", String.class));
                         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                                 subject,
-                                null,
+                                playerId,
                                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
                         );
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

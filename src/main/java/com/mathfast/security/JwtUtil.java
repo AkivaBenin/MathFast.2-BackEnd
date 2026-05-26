@@ -29,19 +29,20 @@ public class JwtUtil {
     private static final long TEACHER_EXPIRATION = 24 * 60 * 60 * 1000L;
     private static final long GUEST_EXPIRATION = 2 * 60 * 60 * 1000L;
 
-    public String generateTeacherToken(String username, String roomId) {
-        return generateToken(username, "TEACHER", roomId, TEACHER_EXPIRATION);
+    public String generateTeacherToken(String username, String roomId, String playerId) {
+        return generateToken(username, "TEACHER", roomId, playerId, TEACHER_EXPIRATION);
     }
 
-    public String generateGuestToken(String nickname, String roomId) {
-        return generateToken(nickname, "GUEST", roomId, GUEST_EXPIRATION);
+    public String generateGuestToken(String nickname, String roomId, String playerId) {
+        return generateToken(nickname, "GUEST", roomId, playerId, GUEST_EXPIRATION);
     }
 
-    private String generateToken(String subject, String role, String roomId, long expirationMillis) {
+    private String generateToken(String subject, String role, String roomId, String playerId, long expirationMillis) {
         return Jwts.builder()
                 .setSubject(subject)
                 .claim("role", role)
                 .claim("roomId", roomId)
+                .claim("playerId", playerId)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMillis))
                 .signWith(signingKey, SignatureAlgorithm.HS256)

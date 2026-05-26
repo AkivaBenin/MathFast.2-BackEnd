@@ -5,6 +5,8 @@ import com.mathfast.dto.MoveRequestDto;
 import com.mathfast.service.RedisCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,15 +27,18 @@ public class MoveController {
             @PathVariable UUID roomId,
             @RequestBody MoveRequestDto moveRequest) {
         
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UUID playerId = UUID.nameUUIDFromBytes(authentication.getName().getBytes());
+
         int points = switch (moveRequest.getDifficulty()) {
-            case "HIGHWAY" -> 20;
+            case "HIGHWAY" -> 30;
             case "DIRT_ROAD" -> 15;
             default -> 10;
         };
 
         redisCacheService.processMove(
                 roomId,
-                moveRequest.getPlayerId(),
+                playerId,
                 moveRequest.getNonce(),
                 points
         );

@@ -40,7 +40,7 @@ public class MathEngineService {
                 int y = ThreadLocalRandom.current().nextInt(1, 11);
                 questionText = String.format("%d + %d = ?", x, y);
                 solution = x + y;
-                pointValue = 7; // Low-risk addition
+                pointValue = 15; // Low-risk addition
                 break;
 
             case REGULAR:

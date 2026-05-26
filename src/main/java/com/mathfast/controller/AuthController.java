@@ -28,7 +28,7 @@ public class AuthController {
     @PostMapping("/teacher/login")
     public ResponseEntity<?> loginTeacher(@RequestParam String username, @RequestParam String password) {
         Teacher teacher = authService.authenticateTeacher(username, password);
-        String token = jwtUtil.generateTeacherToken(teacher.getUsername(), "");
+        String token = jwtUtil.generateTeacherToken(teacher.getUsername(), "", teacher.getId().toString());
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
@@ -40,7 +40,7 @@ public class AuthController {
         Guest guest = authService.joinGuest(request);
         Room room = authService.getRoomByCode(request.getRoomCode());
 
-        String token = jwtUtil.generateGuestToken(guest.getNickname(), room.getId().toString());
+        String token = jwtUtil.generateGuestToken(guest.getNickname(), room.getId().toString(), guest.getId().toString());
         ParticipantDto participantDto = EntityMapper.toParticipantDto(guest);
 
         Map<String, Object> response = new HashMap<>();
@@ -50,5 +50,8 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-
+    @PostMapping("/logout")
+    public ResponseEntity<com.mathfast.dto.ApiResponse<Void>> logout() {
+        return ResponseEntity.ok(com.mathfast.dto.ApiResponse.ok(null));
+    }
 }
