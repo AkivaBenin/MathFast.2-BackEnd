@@ -30,4 +30,7 @@ public class Room {
     private GameState status;
 
     private Integer targetScore;
+
+    @Column(name = "target_questions", nullable = false)
+    private Integer targetQuestions;
 }

@@ -37,8 +37,16 @@ public class SecurityConfig {
             .cors(c -> c.configurationSource(corsConfigurationSource()))
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/race/**").permitAll()
-                .requestMatchers("/api/rooms/**", "/api/admin/**").authenticated()
+                .requestMatchers(
+                        "/api/health",
+                        "/api/auth/teacher/login",
+                        "/api/auth/teacher/register",
+                        "/api/auth/guest/join",
+                        "/api/race/*/stream",
+                        "/api/rooms/*/state"
+                ).permitAll()
+                .requestMatchers("/api/rooms", "/api/rooms/*/start", "/api/rooms/*/reset", "/api/rooms/*/lobby-return", "/api/rooms/*/leave").hasRole("TEACHER")
+                .requestMatchers("/api/admin/**").hasRole("TEACHER")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

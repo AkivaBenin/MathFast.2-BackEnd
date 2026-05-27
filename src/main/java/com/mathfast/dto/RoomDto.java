@@ -17,4 +17,5 @@ public class RoomDto {
     private String roomCode;
     private GameState status;
     private int targetScore;
+    private int targetQuestions;
 }

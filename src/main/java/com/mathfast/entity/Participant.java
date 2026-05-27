@@ -11,7 +11,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "participants")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "role_type", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name = "participant_type")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,7 +27,8 @@ public abstract class Participant {
     private String nickname;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
+    @JoinColumn(name = "room_id", nullable = true)
     private Room room;
 }
+
 

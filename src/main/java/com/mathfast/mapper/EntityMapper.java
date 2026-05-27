@@ -23,6 +23,7 @@ public class EntityMapper {
                 .roomCode(room.getRoomCode())
                 .status(room.getStatus())
                 .targetScore(room.getTargetScore() != null ? room.getTargetScore() : 0)
+                .targetQuestions(room.getTargetQuestions() != null ? room.getTargetQuestions() : 0)
                 .build();
     }
 

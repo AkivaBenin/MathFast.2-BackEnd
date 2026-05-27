@@ -30,9 +30,9 @@ public class RedisCacheService {
     }
 
     public void processMove(UUID roomId, UUID playerId, String nonce, int points) {
-        String roomStateKey = "room:" + roomId + ":state";
-        String nonceKey = "nonce:" + nonce;
-        String scoresKey = "room:" + roomId + ":scores";
+        String roomStateKey = com.mathfast.constant.RedisKeys.getRoomStateKey(roomId);
+        String nonceKey = com.mathfast.constant.RedisKeys.getNonceKey(nonce);
+        String scoresKey = com.mathfast.constant.RedisKeys.getRoomScoresKey(roomId);
 
         List<String> keys = List.of(roomStateKey, nonceKey, scoresKey);
 

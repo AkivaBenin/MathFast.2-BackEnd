@@ -32,13 +32,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        final String queryToken = request.getParameter("token");
+        String queryToken = null;
+        if (request.getRequestURI().matches(".*/api/race/.*/stream")) {
+            queryToken = request.getParameter("token");
+        }
         String jwt = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
         } else if (queryToken != null && !queryToken.isEmpty()) {
             jwt = queryToken;
+        } else if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("JWT".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    break;
+                }
+            }
         }
 
         if (jwt != null) {

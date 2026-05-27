@@ -4,7 +4,7 @@ if roomState ~= 'ACTIVE' then
 end
 
 local nonceValue = redis.call('GET', KEYS[2])
-if nonceValue ~= ARGV[1] then
+if not nonceValue then
     return 'NONCE_INVALID'
 end
 

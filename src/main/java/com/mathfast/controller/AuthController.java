@@ -26,14 +26,25 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/teacher/login")
-    public ResponseEntity<?> loginTeacher(@RequestParam String username, @RequestParam String password) {
-        Teacher teacher = authService.authenticateTeacher(username, password);
+    public ResponseEntity<?> loginTeacher(@RequestBody com.mathfast.dto.TeacherAuthDto request) {
+        Teacher teacher = authService.authenticateTeacher(request.getUsername(), request.getPassword());
         String token = jwtUtil.generateTeacherToken(teacher.getUsername(), "", teacher.getId().toString());
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/teacher/register")
+    public ResponseEntity<?> registerTeacher(@RequestBody com.mathfast.dto.TeacherAuthDto request) {
+        Teacher teacher = authService.registerTeacher(request.getUsername(), request.getPassword());
+        String token = jwtUtil.generateTeacherToken(teacher.getUsername(), "", teacher.getId().toString());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        return ResponseEntity.ok(response);
+    }
+
 
     @PostMapping("/guest/join")
     public ResponseEntity<?> joinGuest(@RequestBody JoinRequestDto request) {
@@ -45,6 +56,10 @@ public class AuthController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
+        response.put("roomId", room.getId().toString());
+        response.put("roomCode", room.getRoomCode());
+        response.put("nickname", guest.getNickname());
+        response.put("role", "GUEST");
         response.put("participant", participantDto);
 
         return ResponseEntity.ok(response);

@@ -18,9 +18,14 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class Teacher extends Participant {
 
+    @lombok.Builder.Default
+    @Column(name = "role_type", nullable = false)
+    private String roleType = "TEACHER";
+
     @Column(unique = true, nullable = false)
     private String username;
 
     @Column(nullable = false)
     private String passwordHash;
 }
+

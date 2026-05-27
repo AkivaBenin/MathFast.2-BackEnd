@@ -28,10 +28,10 @@ public class AuthService {
     @Transactional(readOnly = true)
     public Teacher authenticateTeacher(String username, String password) {
         Teacher teacher = teacherRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new com.mathfast.exception.InvalidCredentialsException("Invalid credentials"));
 
         if (!passwordEncoder.matches(password, teacher.getPasswordHash())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new com.mathfast.exception.InvalidCredentialsException("Invalid credentials");
         }
 
         return teacher;
@@ -40,7 +40,7 @@ public class AuthService {
     @Transactional
     public Guest joinGuest(JoinRequestDto request) {
         Room room = roomRepository.findByRoomCode(request.getRoomCode())
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+                .orElseThrow(() -> new RoomClosedException("Room not found"));
 
         if (room.getStatus() != GameState.LOBBY) {
             throw new RoomClosedException("Game already in progress");
@@ -49,13 +49,28 @@ public class AuthService {
         // Nickname string inherently supports UTF-8 (and Hebrew characters)
         Guest guest = Guest.builder()
                 .nickname(request.getNickname())
+                .room(room)
                 .build();
 
         return participantRepository.save(guest);
     }
     
+    @Transactional
+    public Teacher registerTeacher(String username, String password) {
+        if (teacherRepository.findByUsername(username).isPresent()) {
+            throw new com.mathfast.exception.UsernameAlreadyExistsException("Username already exists");
+        }
+        Teacher teacher = Teacher.builder()
+                .username(username)
+                .passwordHash(passwordEncoder.encode(password))
+                .nickname(username)
+                .build();
+        return teacherRepository.save(teacher);
+    }
+
     public Room getRoomByCode(String roomCode) {
         return roomRepository.findByRoomCode(roomCode)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
     }
 }
+

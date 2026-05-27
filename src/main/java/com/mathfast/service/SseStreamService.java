@@ -1,5 +1,7 @@
 package com.mathfast.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mathfast.constant.RedisKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SseStreamService {
 
     private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper;
 
     // Mapping Room ID -> (Player ID -> SseEmitter)
     private final Map<UUID, Map<UUID, SseEmitter>> roomEmitters = new ConcurrentHashMap<>();
@@ -30,6 +33,9 @@ public class SseStreamService {
         emitter.onCompletion(() -> removeEmitter(roomId, playerId));
         emitter.onTimeout(() -> removeEmitter(roomId, playerId));
         emitter.onError((e) -> removeEmitter(roomId, playerId));
+
+        // When a user connects, we can optionally send them the current state.
+        sendInitialState(emitter, roomId);
 
         return emitter;
     }
@@ -68,32 +74,34 @@ public class SseStreamService {
         }
     }
 
-    public void broadcastRoomState(UUID roomId) {
+    private void sendInitialState(SseEmitter emitter, UUID roomId) {
+        try {
+            String roomStateJson = redisTemplate.opsForValue().get(RedisKeys.getRoomStateJson(roomId));
+            if (roomStateJson != null) {
+                Map<String, Object> stateMap = objectMapper.readValue(roomStateJson, Map.class);
+                emitter.send(SseEmitter.event().name("STATE_CHANGE").data(stateMap));
+            }
+        } catch (Exception e) {
+            log.warn("Could not send initial state to emitter for room {}", roomId);
+        }
+    }
+
+    public void sendToRoom(UUID roomId, String eventName, Object data) {
         Map<UUID, SseEmitter> players = roomEmitters.get(roomId);
-        if (players == null || players.isEmpty()) {
-            return;
-        }
-
-        String roomStateJson = redisTemplate.opsForValue().get("room:" + roomId);
-        if (roomStateJson == null) {
-            log.warn("Room state for {} not found in Redis during broadcast", roomId);
-            return;
-        }
-
-        for (Map.Entry<UUID, SseEmitter> playerEntry : players.entrySet()) {
-            UUID playerId = playerEntry.getKey();
-            SseEmitter emitter = playerEntry.getValue();
-
-            try {
-                emitter.send(SseEmitter.event().name("roomState").data(roomStateJson));
-            } catch (IOException e) {
-                log.warn("Failed to broadcast to player {} in room {}, closing connection.", playerId, roomId);
-                emitter.complete();
-                players.remove(playerId);
+        if (players != null) {
+            for (Map.Entry<UUID, SseEmitter> entry : players.entrySet()) {
+                try {
+                    entry.getValue().send(SseEmitter.event().name(eventName).data(data));
+                } catch (IOException e) {
+                    entry.getValue().complete();
+                    players.remove(entry.getKey());
+                }
             }
         }
-        if (players.isEmpty()) {
-            roomEmitters.remove(roomId);
-        }
+    }
+
+    public int getConnectedCount(UUID roomId) {
+        Map<UUID, SseEmitter> players = roomEmitters.get(roomId);
+        return players != null ? players.size() : 0;
     }
 }
