@@ -29,6 +29,8 @@ spring:
 
   data:
     redis:
+      # Dynamic configuration is managed by com.mathfast.config.RedisConfig
+      # to safely handle REDIS_URL and fall back to local dev properties.
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
